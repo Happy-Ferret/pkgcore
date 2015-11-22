@@ -5,7 +5,7 @@
 
 import argparse
 
-from snakeoil.lists import stable_unique
+from snakeoil.lists import unstable_unique
 
 from pkgcore.util import commandline, parserestrict, repo_utils
 from pkgcore.repository.util import RepositoryGroup
@@ -34,6 +34,12 @@ argparser.add_argument(
     help="With this option enabled, all license filtering, visibility filtering"
          " (ACCEPT_KEYWORDS, package masking, etc) is turned off.")
 argparser.add_argument(
+    '-s', '--stable', action='store_true', default=False,
+    help="show collapsed list of stable keywords")
+argparser.add_argument(
+    '-u', '--unstable', action='store_true', default=False,
+    help="show collapsed list of unstable keywords")
+argparser.add_argument(
     'targets', metavar='target', nargs='+', action=StoreTarget,
     help="extended atom matching of packages")
 argparser.add_argument(
@@ -47,27 +53,39 @@ def setup_repos(namespace, attr):
     # Get repo(s) to operate on.
     if namespace.repo:
         repos = [namespace.repo]
-    elif namespace.no_filters:
+    elif namespace.unfiltered:
         repos = namespace.domain.repos_configured.values()
     else:
-        repos = namespace.domain.source_repos
+        repos = namespace.domain.ebuild_repos
 
     if namespace.raw:
         repos = repo_utils.get_raw_repos(repos)
 
-    setattr(namespace, attr, repos)
+    setattr(namespace, attr, RepositoryGroup(repos))
+
+
+@argparser.bind_final_check
+def _validate_args(parser, namespace):
+    arches = {arch for repo in namespace.repos.repos
+              for arch in repo.config.known_arches}
+    if namespace.stable:
+        namespace.arches = arches
+    elif namespace.unstable:
+        namespace.arches = {'~' + arch for arch in arches}
 
 
 @argparser.bind_main_func
 def main(options, out, err):
     for token, restriction in options.targets:
-        pkgs = []
-        for repo in options.repos:
-            pkgs += repo.match(restriction)
+        pkgs = options.repos.match(restriction)
 
         if not pkgs:
             err.write("no matches for '%s'" % (token,))
             continue
 
-        for pkg in pkgs:
-            out.write('%s: %s' % (pkg.cpvstr, ', '.join(pkg.keywords)))
+        if options.stable or options.unstable:
+            keywords = set(unstable_unique(arch for pkg in pkgs for arch in pkg.keywords))
+            out.write(' '.join(sorted(keywords.intersection(options.arches))))
+        else:
+            for pkg in pkgs:
+                out.write('%s: %s' % (pkg.cpvstr, ', '.join(pkg.keywords)))
