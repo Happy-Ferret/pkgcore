@@ -4,7 +4,6 @@
 """Display keywords for specified targets."""
 
 import argparse
-from collections import defaultdict
 
 from pkgcore.util import commandline, parserestrict
 from pkgcore.repository.util import RepositoryGroup
@@ -94,7 +93,5 @@ def main(options, out, err):
                 sorted(arches.intersection(options.prefix_arches))))
         else:
             # TODO: tabular layout
-            d = defaultdict(dict)
             for pkg in sorted(pkgs):
-                out.write('{} | {} | {}'.format(pkg.fullver, ' '.join(pkg.keywords), pkg.repo.repo_id))
-                d[pkg.slot][pkg.fullver] = pkg.keywords
+                out.write('{}: {}'.format(pkg.fullver, ' '.join(pkg.keywords)))
