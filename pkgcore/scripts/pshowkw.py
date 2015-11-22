@@ -26,6 +26,9 @@ argparser.add_argument(
     '-u', '--unstable', action='store_true', default=False,
     help="show unstable arches")
 argparser.add_argument(
+    '-p', '--prefix', action='store_true', default=False,
+    help="show prefix and non-native arches")
+argparser.add_argument(
     '-c', '--collapse', action='store_true', default=False,
     help="show collapsed list of arches")
 # TODO: check against valid arch list
@@ -55,14 +58,11 @@ def setup_repos(namespace, attr):
     arches = known_arches
     if namespace.arch is not None:
         arches = arches.intersection(namespace.arch)
-
     prefix_arches = set(x for x in arches if '-' in x)
     native_arches = arches.difference(prefix_arches)
-
-    if not namespace.collapse:
-        arches = native_arches
-        if namespace.unstable:
-            arches = arches.union(prefix_arches)
+    arches = native_arches
+    if namespace.prefix:
+        arches = arches.union(prefix_arches)
 
     namespace.repo = repo
     namespace.known_arches = known_arches
