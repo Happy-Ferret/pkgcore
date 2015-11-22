@@ -25,11 +25,11 @@ class StoreTarget(argparse._AppendAction):
 
 argparser = commandline.mk_argparser(description=__doc__)
 argparser.add_argument(
-    '-s', '--stable', action='store_true', default=False,
-    help="show collapsed list of stable keywords")
-argparser.add_argument(
     '-u', '--unstable', action='store_true', default=False,
-    help="show collapsed list of unstable keywords")
+    help="show unstable arches")
+argparser.add_argument(
+    '-c', '--collapse', action='store_true', default=False,
+    help="show collapsed list of arches")
 argparser.add_argument(
     '-a', '--arch', action='extend_comma',
     help='arches to display')
@@ -52,19 +52,19 @@ def setup_repos(namespace, attr):
 
     known_arches = {arch for r in repo.repos
                     for arch in r.config.known_arches}
-    stable = set()
-    unstable = set()
     arches = known_arches
     if namespace.arch is not None:
         arches = arches.intersection(namespace.arch)
-    if namespace.stable:
-        stable = arches
-    if namespace.unstable:
-        unstable = {'~' + arch for arch in arches}
+    if not namespace.collapse:
+        prefix_arches = set(x for x in arches if '-' in x)
+        native_arches = arches.difference(prefix_arches)
+        arches = native_arches
+        if namespace.unstable:
+            arches = arches.union(prefix_arches)
 
     namespace.repo = repo
     namespace.known_arches = known_arches
-    namespace.arches = stable | unstable
+    namespace.arches = arches
 
 
 @argparser.bind_main_func
@@ -76,11 +76,19 @@ def main(options, out, err):
             err.write("no matches for '%s'" % (token,))
             continue
 
-        if options.stable or options.unstable:
-            keywords = set(unstable_unique(arch for pkg in pkgs for arch in pkg.keywords))
-            keywords = sorted(keywords.intersection(options.arches))
-            if keywords:
-                out.write(' '.join(keywords))
-        else:
+        if options.collapse:
+            keywords = []
             for pkg in pkgs:
-                out.write('%s: %s' % (pkg.cpvstr, ', '.join(pkg.keywords)))
+                if options.unstable:
+                    keywords.extend(x.lstrip('~') for x in pkg.keywords)
+                else:
+                    keywords.extend(pkg.keywords)
+            arches = options.arches.intersection(keywords)
+            if arches:
+                out.write(' '.join(arches))
+        else:
+            # TODO: tabular layout
+            d = defaultdict(dict)
+            for pkg in sorted(pkgs):
+                out.write('{} | {} | {}'.format(pkg.fullver, ' '.join(pkg.keywords), pkg.repo.repo_id))
+                d[pkg.slot][pkg.fullver] = pkg.keywords
