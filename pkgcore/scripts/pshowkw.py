@@ -4,8 +4,7 @@
 """Display keywords for specified targets."""
 
 import argparse
-
-from snakeoil.lists import unstable_unique
+from collections import defaultdict
 
 from pkgcore.util import commandline, parserestrict
 from pkgcore.repository.util import RepositoryGroup
