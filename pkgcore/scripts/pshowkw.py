@@ -56,15 +56,19 @@ def setup_repos(namespace, attr):
     arches = known_arches
     if namespace.arch is not None:
         arches = arches.intersection(namespace.arch)
+
+    prefix_arches = set(x for x in arches if '-' in x)
+    native_arches = arches.difference(prefix_arches)
+
     if not namespace.collapse:
-        prefix_arches = set(x for x in arches if '-' in x)
-        native_arches = arches.difference(prefix_arches)
         arches = native_arches
         if namespace.unstable:
             arches = arches.union(prefix_arches)
 
     namespace.repo = repo
     namespace.known_arches = known_arches
+    namespace.prefix_arches = prefix_arches
+    namespace.native_arches = native_arches
     namespace.arches = arches
 
 
@@ -85,7 +89,9 @@ def main(options, out, err):
                 else:
                     keywords.extend(pkg.keywords)
             arches = options.arches.intersection(keywords)
-            out.write(' '.join(sorted(arches)))
+            out.write(' '.join(
+                sorted(arches.intersection(options.native_arches)) +
+                sorted(arches.intersection(options.prefix_arches))))
         else:
             # TODO: tabular layout
             d = defaultdict(dict)
