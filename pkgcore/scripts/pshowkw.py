@@ -76,8 +76,9 @@ def main(options, out, err):
 
         if options.stable or options.unstable:
             keywords = set(unstable_unique(arch for pkg in pkgs for arch in pkg.keywords))
-            for keyword in sorted(keywords.intersection(options.arches)):
-                out.write(keyword)
+            keywords = sorted(keywords.intersection(options.arches))
+            if keywords:
+                out.write(' '.join(keywords))
         else:
             for pkg in pkgs:
                 out.write('%s: %s' % (pkg.cpvstr, ', '.join(pkg.keywords)))
