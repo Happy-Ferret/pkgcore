@@ -30,13 +30,15 @@ argparser.add_argument(
 argparser.add_argument(
     '-c', '--collapse', action='store_true', default=False,
     help="show collapsed list of arches")
+# TODO: check against valid arch list
 argparser.add_argument(
     '-a', '--arch', action='extend_comma',
     help='arches to display')
+# TODO: force ebuild repos only and allow multi-repo comma-separated input
 argparser.add_argument(
     '-r', '--repo',
     action=commandline.StoreRepoObject, priority=29,
-    help='repo(s) to use (default from domain if omitted)')
+    help='repo(s) to use (defaults to all ebuild repos)')
 argparser.add_argument(
     'targets', metavar='target', nargs='+', action=StoreTarget,
     help="extended atom matching of packages")
