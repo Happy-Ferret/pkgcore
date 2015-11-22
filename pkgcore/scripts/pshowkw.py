@@ -84,8 +84,7 @@ def main(options, out, err):
                 else:
                     keywords.extend(pkg.keywords)
             arches = options.arches.intersection(keywords)
-            if arches:
-                out.write(' '.join(arches))
+            out.write(' '.join(sorted(arches)))
         else:
             # TODO: tabular layout
             d = defaultdict(dict)
