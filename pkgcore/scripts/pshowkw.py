@@ -7,34 +7,38 @@ import argparse
 
 from snakeoil.lists import stable_unique
 
-from pkgcore.util import commandline, parserestrict
+from pkgcore.util import commandline, parserestrict, repo_utils
 from pkgcore.repository.util import RepositoryGroup
+from pkgcore.scripts.pquery import RawAwareStoreRepoObject
 
 
 class StoreTarget(argparse._AppendAction):
 
     def __call__(self, parser, namespace, values, option_string=None):
-        items = []
+        targets = []
         try:
             for x in values:
-                items.append((x, parserestrict.parse_match(x)))
+                targets.append((x, parserestrict.parse_match(x)))
         except parserestrict.ParseError as e:
-            raise argparse.ArgumentError(self, "atom is malformed: '%s'" % x)
-        setattr(namespace, self.dest, items)
+            parser.only_error(e)
+        setattr(namespace, self.dest, targets)
 
 
 argparser = commandline.mk_argparser(description=__doc__)
 
 argparser.add_argument(
-    "--no-filters", action='store_true', default=False,
-    help="disable all license filtering, visibility filtering "
-         "(ACCEPT_KEYWORDS, package masking, etc)")
+    "--raw", action='store_true', default=False,
+    help="use raw dependencies")
 argparser.add_argument(
-    'targets', metavar='target',  nargs='+', action=StoreTarget,
+    '--unfiltered', action='store_true', default=False,
+    help="With this option enabled, all license filtering, visibility filtering"
+         " (ACCEPT_KEYWORDS, package masking, etc) is turned off.")
+argparser.add_argument(
+    'targets', metavar='target', nargs='+', action=StoreTarget,
     help="extended atom matching of packages")
 argparser.add_argument(
     '-r', '--repo',
-    action=commandline.StoreRepoObject, priority=29,
+    action=RawAwareStoreRepoObject, priority=29,
     help='repo(s) to use (default from domain if omitted)')
 
 
@@ -43,8 +47,13 @@ def setup_repos(namespace, attr):
     # Get repo(s) to operate on.
     if namespace.repo:
         repos = [namespace.repo]
+    elif namespace.no_filters:
+        repos = namespace.domain.repos_configured.values()
     else:
         repos = namespace.domain.source_repos
+
+    if namespace.raw:
+        repos = repo_utils.get_raw_repos(repos)
 
     setattr(namespace, attr, repos)
 
