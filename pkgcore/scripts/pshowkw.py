@@ -40,12 +40,15 @@ argparser.add_argument(
     '-u', '--unstable', action='store_true', default=False,
     help="show collapsed list of unstable keywords")
 argparser.add_argument(
-    'targets', metavar='target', nargs='+', action=StoreTarget,
-    help="extended atom matching of packages")
+    '-a', '--arch', action='extend_comma',
+    help='arches to display')
 argparser.add_argument(
     '-r', '--repo',
     action=RawAwareStoreRepoObject, priority=29,
     help='repo(s) to use (default from domain if omitted)')
+argparser.add_argument(
+    'targets', metavar='target', nargs='+', action=StoreTarget,
+    help="extended atom matching of packages")
 
 
 @argparser.bind_delayed_default(30, 'repos')
@@ -68,10 +71,11 @@ def setup_repos(namespace, attr):
 def _validate_args(parser, namespace):
     arches = {arch for repo in namespace.repos.repos
               for arch in repo.config.known_arches}
-    if namespace.stable:
-        namespace.arches = arches
-    elif namespace.unstable:
-        namespace.arches = {'~' + arch for arch in arches}
+    if namespace.arch is not None:
+        arches = arches.intersection(namespace.arch)
+    if namespace.unstable:
+        arches = {'~' + arch for arch in arches}
+    namespace.arches = arches
 
 
 @argparser.bind_main_func
