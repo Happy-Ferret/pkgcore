@@ -1,7 +1,7 @@
 # Copyright: 2015 Tim Harder <radhermit@gmail.com
 # License: BSD/GPL2
 
-"""Display keywords for specified targets."""
+"""display ebuild keywords"""
 
 import argparse
 
@@ -23,13 +23,13 @@ class StoreTarget(argparse._AppendAction):
 
 argparser = commandline.mk_argparser(description=__doc__)
 argparser.add_argument(
-    '-u', '--unstable', action='store_true', default=False,
+    '-u', '--unstable', action='store_true',
     help="show unstable arches")
 argparser.add_argument(
-    '-p', '--prefix', action='store_true', default=False,
+    '-p', '--prefix', action='store_true',
     help="show prefix and non-native arches")
 argparser.add_argument(
-    '-c', '--collapse', action='store_true', default=False,
+    '-c', '--collapse', action='store_true',
     help="show collapsed list of arches")
 # TODO: check against valid arch list
 argparser.add_argument(
