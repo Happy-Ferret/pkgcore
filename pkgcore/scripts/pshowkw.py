@@ -52,13 +52,17 @@ def setup_repos(namespace, attr):
 
     arches = {arch for r in repo.repos
               for arch in r.config.known_arches}
+    stable = set()
+    unstable = set()
     if namespace.arch is not None:
         arches = arches.intersection(namespace.arch)
+    if namespace.stable:
+        stable = arches
     if namespace.unstable:
-        arches = {'~' + arch for arch in arches}
+        unstable = {'~' + arch for arch in arches}
 
     namespace.repo = repo
-    namespace.arches = arches
+    namespace.arches = stable | unstable
 
 
 @argparser.bind_main_func
@@ -72,7 +76,8 @@ def main(options, out, err):
 
         if options.stable or options.unstable:
             keywords = set(unstable_unique(arch for pkg in pkgs for arch in pkg.keywords))
-            out.write(' '.join(sorted(keywords.intersection(options.arches))))
+            for keyword in sorted(keywords.intersection(options.arches)):
+                out.write(keyword)
         else:
             for pkg in pkgs:
                 out.write('%s: %s' % (pkg.cpvstr, ', '.join(pkg.keywords)))
