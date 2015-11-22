@@ -50,10 +50,11 @@ def setup_repos(namespace, attr):
     else:
         repo = namespace.domain.ebuild_repos_raw
 
-    arches = {arch for r in repo.repos
-              for arch in r.config.known_arches}
+    known_arches = {arch for r in repo.repos
+                    for arch in r.config.known_arches}
     stable = set()
     unstable = set()
+    arches = known_arches
     if namespace.arch is not None:
         arches = arches.intersection(namespace.arch)
     if namespace.stable:
@@ -62,6 +63,7 @@ def setup_repos(namespace, attr):
         unstable = {'~' + arch for arch in arches}
 
     namespace.repo = repo
+    namespace.known_arches = known_arches
     namespace.arches = stable | unstable
 
 
