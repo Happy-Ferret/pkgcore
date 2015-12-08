@@ -23,7 +23,6 @@ arch_options.add_argument(
 arch_options.add_argument(
     '-c', '--collapse', action='store_true',
     help="show collapsed list of arches")
-# TODO: check against valid arch list
 arch_options.add_argument(
     '-a', '--arch', action='extend_comma',
     help='select arches to display')
@@ -52,7 +51,13 @@ def setup_repos(namespace, attr):
                     for arch in r.config.known_arches}
     arches = known_arches
     if namespace.arch is not None:
-        arches = arches.intersection(namespace.arch)
+        selected_arches = set(namespace.arch)
+        unknown_arches = selected_arches.difference(known_arches)
+        if unknown_arches:
+            argparser.error(
+                'unknown arch(es): %s (choices: %s)' % (
+                    ', '.join(sorted(unknown_arches)), ', '.join(sorted(known_arches))))
+        arches = arches.intersection(selected_arches)
     prefix_arches = set(x for x in arches if '-' in x)
     native_arches = arches.difference(prefix_arches)
     arches = native_arches
