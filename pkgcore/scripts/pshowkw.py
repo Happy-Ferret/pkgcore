@@ -13,24 +13,27 @@ from pkgcore.repository.util import RepositoryGroup
 
 
 argparser = commandline.mk_argparser(description=__doc__)
-argparser.add_argument(
+arch_options = argparser.add_argument_group('arch options')
+arch_options.add_argument(
     '-u', '--unstable', action='store_true',
     help="show unstable arches")
-argparser.add_argument(
+arch_options.add_argument(
     '-p', '--prefix', action='store_true',
     help="show prefix and non-native arches")
-argparser.add_argument(
+arch_options.add_argument(
     '-c', '--collapse', action='store_true',
     help="show collapsed list of arches")
 # TODO: check against valid arch list
-argparser.add_argument(
+arch_options.add_argument(
     '-a', '--arch', action='extend_comma',
-    help='arches to display')
+    help='select arches to display')
+
 # TODO: force ebuild repos only and allow multi-repo comma-separated input
 argparser.add_argument(
     '-r', '--repo',
     action=commandline.StoreRepoObject, priority=29,
     help='repo(s) to use (defaults to all ebuild repos)')
+
 argparser.add_argument(
     'targets', metavar='target', nargs='+',
     action=partial(commandline.StoreTarget, sets=False),
