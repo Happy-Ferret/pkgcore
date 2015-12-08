@@ -9,7 +9,11 @@ from functools import partial
 from pkgcore.util import commandline, parserestrict
 from pkgcore.repository.util import RepositoryGroup
 
+from snakeoil.demandload import demandload
 
+demandload(
+    'os',
+)
 
 
 argparser = commandline.mk_argparser(description=__doc__)
@@ -34,7 +38,7 @@ argparser.add_argument(
     help='repo(s) to use (defaults to all ebuild repos)')
 
 argparser.add_argument(
-    'targets', metavar='target', nargs='+',
+    'targets', metavar='target', nargs='*',
     action=partial(commandline.StoreTarget, sets=False),
     help="extended atom matching of packages")
 
@@ -69,6 +73,19 @@ def setup_repos(namespace, attr):
     namespace.prefix_arches = prefix_arches
     namespace.native_arches = native_arches
     namespace.arches = arches
+
+
+@argparser.bind_final_check
+def _validate_args(parser, namespace):
+    # allow no args if we're in a repo, obviously it'll work faster if we're in
+    # an invididual ebuild dir but we're not that restrictive
+    if not namespace.targets:
+        try:
+            restriction = namespace.repo.path_restrict(os.getcwd())
+        except ValueError as e:
+            parser.error('missing target argument and not in a configured repo directory')
+
+        namespace.targets = [(os.getcwd(), restriction)]
 
 
 @argparser.bind_main_func
