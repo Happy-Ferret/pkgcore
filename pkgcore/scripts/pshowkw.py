@@ -4,21 +4,12 @@
 """display ebuild keywords"""
 
 import argparse
+from functools import partial
 
 from pkgcore.util import commandline, parserestrict
 from pkgcore.repository.util import RepositoryGroup
 
 
-class StoreTarget(argparse._AppendAction):
-
-    def __call__(self, parser, namespace, values, option_string=None):
-        targets = []
-        try:
-            for x in values:
-                targets.append((x, parserestrict.parse_match(x)))
-        except parserestrict.ParseError as e:
-            parser.only_error(e)
-        setattr(namespace, self.dest, targets)
 
 
 argparser = commandline.mk_argparser(description=__doc__)
@@ -41,7 +32,8 @@ argparser.add_argument(
     action=commandline.StoreRepoObject, priority=29,
     help='repo(s) to use (defaults to all ebuild repos)')
 argparser.add_argument(
-    'targets', metavar='target', nargs='+', action=StoreTarget,
+    'targets', metavar='target', nargs='+',
+    action=partial(commandline.StoreTarget, sets=False),
     help="extended atom matching of packages")
 
 
