@@ -7,12 +7,12 @@ import argparse
 from functools import partial
 
 from pkgcore.util import commandline, parserestrict
-from pkgcore.repository.util import RepositoryGroup
 
 from snakeoil.demandload import demandload
 
 demandload(
     'os',
+    'pkgcore.repository:multiplex',
 )
 
 
@@ -47,11 +47,13 @@ argparser.add_argument(
 def setup_repos(namespace, attr):
     # Get repo(s) to operate on.
     if namespace.repo:
-        repo = RepositoryGroup([namespace.repo.raw_repo])
+        repos = [namespace.repo.raw_repo]
+        repo = multiplex.tree(*repos)
     else:
-        repo = namespace.domain.ebuild_repos_raw
+        repo = namespace.domain.all_raw_ebuild_repos
 
-    known_arches = {arch for r in repo.repos
+    # build arch sets
+    known_arches = {arch for r in repo.trees
                     for arch in r.config.known_arches}
     arches = known_arches
     if namespace.arch is not None:
