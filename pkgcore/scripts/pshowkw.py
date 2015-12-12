@@ -110,6 +110,17 @@ def main(options, out, err):
                 sorted(arches.intersection(options.native_arches)) +
                 sorted(arches.intersection(options.prefix_arches))))
         else:
-            # TODO: tabular layout
-            for pkg in sorted(pkgs):
-                out.write('{}: {}'.format(pkg.fullver, ' '.join(pkg.keywords)))
+            out.write(PkgTable(pkgs, options.arches))
+
+
+class PkgTable(object):
+
+    def __init__(self, pkgs, arches):
+        self.pkgs = pkgs
+        self.arches = arches
+
+    def __str__(self):
+        s = []
+        for pkg in sorted(self.pkgs):
+            s.append('{}: {}'.format(pkg.fullver, ' '.join(pkg.keywords)))
+        return '\n'.join(s)
