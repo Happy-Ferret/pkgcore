@@ -47,8 +47,7 @@ argparser.add_argument(
 def setup_repos(namespace, attr):
     # Get repo(s) to operate on.
     if namespace.repo:
-        repos = [namespace.repo.raw_repo]
-        repo = multiplex.tree(*repos)
+        repo = multiplex.tree(namespace.repo.raw_repo)
     else:
         repo = namespace.domain.all_raw_ebuild_repos
 
