@@ -22,6 +22,9 @@ arch_options.add_argument(
     '-u', '--unstable', action='store_true',
     help="show unstable arches")
 arch_options.add_argument(
+    '-s', '--stable', action='store_true',
+    help="only show arches with stable profiles")
+arch_options.add_argument(
     '-p', '--prefix', action='store_true',
     help="show prefix and non-native arches")
 arch_options.add_argument(
@@ -71,6 +74,10 @@ def setup_arches(namespace, attr):
     arches = native_arches
     if namespace.prefix:
         arches = arches.union(prefix_arches)
+    if namespace.stable:
+        stable_arches = {arch for r in namespace.repo.trees
+                         for arch in r.config.stable_arches}
+        arches = arches.intersection(stable_arches)
 
     namespace.known_arches = known_arches
     namespace.prefix_arches = prefix_arches
