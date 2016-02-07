@@ -50,9 +50,12 @@ def setup_repos(namespace, attr):
         repo = multiplex.tree(namespace.repo.raw_repo)
     else:
         repo = namespace.domain.all_raw_ebuild_repos
+    namespace.repo = repo
 
-    # build arch sets
-    known_arches = {arch for r in repo.trees
+
+@argparser.bind_delayed_default(40, 'arches')
+def setup_arches(namespace, attr):
+    known_arches = {arch for r in namespace.repo.trees
                     for arch in r.config.known_arches}
     arches = known_arches
     if namespace.arch is not None:
@@ -69,7 +72,6 @@ def setup_repos(namespace, attr):
     if namespace.prefix:
         arches = arches.union(prefix_arches)
 
-    namespace.repo = repo
     namespace.known_arches = known_arches
     namespace.prefix_arches = prefix_arches
     namespace.native_arches = native_arches
