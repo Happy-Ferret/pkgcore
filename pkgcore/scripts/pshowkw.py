@@ -20,16 +20,16 @@ argparser = commandline.mk_argparser(description=__doc__)
 arch_options = argparser.add_argument_group('arch options')
 arch_options.add_argument(
     '-u', '--unstable', action='store_true',
-    help="show unstable arches")
+    help='show unstable arches')
 arch_options.add_argument(
     '-s', '--stable', action='store_true',
-    help="only show arches with stable profiles")
+    help='only show arches with stable profiles')
 arch_options.add_argument(
     '-p', '--prefix', action='store_true',
-    help="show prefix and non-native arches")
+    help='show prefix and non-native arches')
 arch_options.add_argument(
     '-c', '--collapse', action='store_true',
-    help="show collapsed list of arches")
+    help='show collapsed list of arches')
 arch_options.add_argument(
     '-a', '--arch', action='extend_comma',
     help='select arches to display')
@@ -43,7 +43,7 @@ argparser.add_argument(
 argparser.add_argument(
     'targets', metavar='target', nargs='*',
     action=partial(commandline.StoreTarget, sets=False),
-    help="extended atom matching of packages")
+    help='extended atom matching of packages')
 
 
 @argparser.bind_delayed_default(30, 'repos')
