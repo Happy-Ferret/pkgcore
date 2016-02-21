@@ -3,10 +3,9 @@
 
 """display ebuild keywords"""
 
-import argparse
 from functools import partial
 
-from pkgcore.util import commandline, parserestrict
+from pkgcore.util import commandline
 
 from snakeoil.demandload import demandload
 
@@ -16,7 +15,7 @@ demandload(
 )
 
 
-argparser = commandline.mk_argparser(description=__doc__)
+argparser = commandline.ArgumentParser(description=__doc__)
 arch_options = argparser.add_argument_group('arch options')
 arch_options.add_argument(
     '-u', '--unstable', action='store_true',
