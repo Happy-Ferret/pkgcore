@@ -36,7 +36,7 @@ arch_options.add_argument(
 # TODO: force ebuild repos only and allow multi-repo comma-separated input
 argparser.add_argument(
     '-r', '--repo',
-    action=commandline.StoreRepoObject, priority=29,
+    action=commandline.StoreRepoObject, raw=True, priority=29,
     help='repo(s) to use (defaults to all ebuild repos)')
 
 argparser.add_argument(
