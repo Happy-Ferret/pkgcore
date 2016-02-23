@@ -11,6 +11,7 @@ from snakeoil.demandload import demandload
 
 demandload(
     'os',
+    'pkgcore.ebuild:repository@ebuild_repo',
     'pkgcore.repository:multiplex',
 )
 
@@ -48,8 +49,12 @@ argparser.add_argument(
 @argparser.bind_delayed_default(30, 'repos')
 def setup_repos(namespace, attr):
     # Get repo(s) to operate on.
-    if namespace.repo:
-        repo = multiplex.tree(namespace.repo.raw_repo)
+    repo = namespace.repo
+    if repo:
+        # TODO: remove this workaround once StoreRepoObject accepts types
+        if not isinstance(repo, ebuild_repo._UnconfiguredTree):
+            argparser.error('only ebuild repos are supported')
+        repo = multiplex.tree(repo)
     else:
         repo = namespace.domain.all_raw_ebuild_repos
     namespace.repo = repo
