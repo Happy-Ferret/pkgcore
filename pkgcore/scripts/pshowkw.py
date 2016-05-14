@@ -19,11 +19,14 @@ demandload(
 argparser = commandline.ArgumentParser(description=__doc__)
 arch_options = argparser.add_argument_group('arch options')
 arch_options.add_argument(
+    '-s', '--stable', action='store_true',
+    help='show stable arches')
+arch_options.add_argument(
     '-u', '--unstable', action='store_true',
     help='show unstable arches')
 arch_options.add_argument(
-    '-s', '--stable', action='store_true',
-    help='only show arches with stable profiles')
+    '-o', '--only-unstable', action='store_true',
+    help='show arches that only have unstable keywords')
 arch_options.add_argument(
     '-p', '--prefix', action='store_true',
     help='show prefix and non-native arches')
@@ -112,12 +115,21 @@ def main(options, out, err):
             continue
 
         if options.collapse:
-            keywords = []
+            keywords = set()
+            stable_keywords = set()
+            unstable_keywords = set()
             for pkg in pkgs:
-                if options.unstable:
-                    keywords.extend(x.lstrip('~') for x in pkg.keywords)
-                else:
-                    keywords.extend(pkg.keywords)
+                for x in pkg.keywords:
+                    if x[0] == '~':
+                        unstable_keywords.add(x[1:])
+                    else:
+                        stable_keywords.add(x)
+            if options.unstable:
+                keywords.update(unstable_keywords)
+            if options.only_unstable:
+                keywords.update(unstable_keywords.difference(stable_keywords))
+            if not keywords or options.stable:
+                keywords.update(stable_keywords)
             arches = options.arches.intersection(keywords)
             out.write(' '.join(
                 sorted(arches.intersection(options.native_arches)) +
