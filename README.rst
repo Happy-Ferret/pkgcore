@@ -34,9 +34,8 @@ Tools
 Requirements
 ============
 
-At least python version 2.7, and snakeoil_ — a utility library with misc
-optimizations split out of pkgcore for others to use.  For unittests, mock_ is
-required if you're using anything less than python 3.3.
+At least python version 3.4, and snakeoil_ — a utility library with misc
+optimizations split out of pkgcore for others to use.
 
 Installing
 ==========
@@ -74,7 +73,7 @@ environments just execute **tox** in the root directory of a repo or unpacked
 tarball. Otherwise, for a specific python version execute something similar to
 the following::
 
-    tox -e py27
+    tox -e py34
 
 Contact
 =======
