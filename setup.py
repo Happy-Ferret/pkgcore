@@ -209,7 +209,7 @@ setup(
     author='Brian Harring, Tim Harder',
     author_email='pkgcore-dev@googlegroups.com',
     packages=find_packages(),
-    install_requires=['snakeoil>=0.7.0'],
+    install_requires=['snakeoil>=0.8.0'],
     scripts=os.listdir('bin'),
     data_files=list(chain(
         pkgdist.data_mapping(EBD_INSTALL_OFFSET, 'ebd'),
