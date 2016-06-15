@@ -27,7 +27,6 @@ from pkgcore.restrictions import values
 
 demandload(
     'fnmatch',
-    'snakeoil:compatibility',
     'pkgcore:os_data',
 )
 

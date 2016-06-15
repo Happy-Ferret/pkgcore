@@ -15,7 +15,6 @@ import os.path
 
 from snakeoil import klass
 from snakeoil.bash import iter_read_bash
-from snakeoil.compatibility import raise_from
 from snakeoil.data_source import local_source
 from snakeoil.demandload import demandload
 from snakeoil.mappings import ProtectedDict
@@ -213,9 +212,9 @@ class domain(config_domain):
                 except EnvironmentError as e:
                     if e.errno == errno.ENOENT:
                         raise MissingFile(fp, key)
-                    raise_from(Failure("failed reading '%s': %s" % (fp, e)))
+                    raise Failure("failed reading '%s': %s" % (fp, e)) from e
                 except ValueError as e:
-                    raise_from(Failure("failed reading '%s': %s" % (fp, e)))
+                    raise Failure("failed reading '%s': %s" % (fp, e)) from e
 
         for x in incrementals:
             if isinstance(settings.get(x), basestring):
@@ -358,9 +357,9 @@ class domain(config_domain):
                                 pargs.append(profile)
                             else:
                                 pargs.append(getattr(self, x))
-                    except AttributeError as ae:
-                        raise_from(Failure("failed configuring repo '%s': "
-                                           "configurable missing: %s" % (repo, ae)))
+                    except AttributeError as e:
+                        raise Failure("failed configuring repo '%s': "
+                                           "configurable missing: %s" % (repo, e)) from e
                     wrapped_repo = repo.configure(*pargs)
                 else:
                     wrapped_repo = repo

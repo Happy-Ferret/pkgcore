@@ -10,10 +10,10 @@ __all__ = ("tree",)
 from functools import partial
 from itertools import imap, ifilterfalse
 import os
+from sys import intern
 
 from snakeoil import klass
 from snakeoil.bash import iter_read_bash, read_dict
-from snakeoil.compatibility import intern, raise_from
 from snakeoil.containers import InvertedContains
 from snakeoil.demandload import demandload
 from snakeoil.fileutils import readlines
@@ -386,7 +386,7 @@ class _UnconfiguredTree(prototype.tree):
                 self.false_categories.__contains__,
                 (x for x in listdir_dirs(self.base) if x[0:1] != "."))))
         except EnvironmentError as e:
-            raise_from(KeyError("failed fetching categories: %s" % str(e)))
+            raise KeyError("failed fetching categories: %s" % str(e)) from e
 
     def _get_packages(self, category):
         cpath = pjoin(self.base, category.lstrip(os.path.sep))
@@ -398,9 +398,9 @@ class _UnconfiguredTree(prototype.tree):
                 if category in self.categories:
                     # ignore it, since it's PMS mandated that it be allowed.
                     return ()
-            raise_from(KeyError(
+            raise KeyError(
                 "failed fetching packages for category %s: %s" %
-                (pjoin(self.base, category.lstrip(os.path.sep)), str(e))))
+                (pjoin(self.base, category.lstrip(os.path.sep)), str(e))) from e
 
     def _get_versions(self, catpkg):
         cppath = pjoin(self.base, catpkg[0], catpkg[1])
@@ -427,9 +427,9 @@ class _UnconfiguredTree(prototype.tree):
                              if ('scm' not in x and 'try' not in x))
             return ret
         except EnvironmentError as e:
-            raise_from(KeyError(
+            raise KeyError(
                 "failed fetching versions for package %s: %s" %
-                (pjoin(self.base, '/'.join(catpkg)), str(e))))
+                (pjoin(self.base, '/'.join(catpkg)), str(e))) from e
 
     def _get_ebuild_path(self, pkg):
         if pkg.revision is None:
@@ -503,10 +503,10 @@ class _UnconfiguredTree(prototype.tree):
         except IOError as i:
             if i.errno != errno.ENOENT:
                 raise
-        except ebuild_errors.MalformedAtom as ma:
-            raise_from(profiles.ProfileError(
+        except ebuild_errors.MalformedAtom as e:
+            raise profiles.ProfileError(
                 pjoin(self.base, 'profiles'),
-                'package.mask', ma))
+                'package.mask', e) from e
         return [neg, pos]
 
     def _regen_operation_helper(self, **kwds):

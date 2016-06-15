@@ -13,7 +13,7 @@ __all__ = (
 from itertools import chain
 import os
 
-from snakeoil import compatibility, klass, mappings
+from snakeoil import klass, mappings
 from snakeoil.caching import WeakInstMeta
 from snakeoil.currying import post_curry
 from snakeoil.demandload import demandload
@@ -364,9 +364,8 @@ class RepoConfig(syncable.tree):
             if not stat.S_ISDIR(os.stat(location).st_mode):
                 raise errors.InitializationError(
                     "location not a dir: %s" % (location,))
-        except OSError:
-            compatibility.raise_from(errors.InitializationError(
-                "lstat failed on location %s" % (location,)))
+        except OSError as e:
+            raise errors.InitializationError("lstat failed on location %s" % (location,)) from e
 
         object.__setattr__(self, 'config_name', config_name)
         object.__setattr__(self, 'location', location)
@@ -506,11 +505,10 @@ class RepoConfig(syncable.tree):
         except EnvironmentError as e:
             if e.errno != errno.ENOENT:
                 raise
-        except ValueError:
+        except ValueError as e:
             if line is None:
                 raise
-            compatibility.raise_from(
-                ValueError("Failed parsing %r: line was %r" % (fp, line)))
+            raise ValueError("Failed parsing %r: line was %r" % (fp, line)) from e
 
     known_arches = klass.alias_attr('raw_known_arches')
     use_desc = klass.alias_attr('raw_use_desc')

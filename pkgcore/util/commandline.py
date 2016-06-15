@@ -25,7 +25,8 @@ import logging
 import os
 import sys
 
-from snakeoil import compatibility, formatters, modules
+from snakeoil import formatters, modules
+from snakeoil.compatibility import IGNORED_EXCEPTIONS
 from snakeoil.cli import arghparse
 from snakeoil.demandload import demandload
 
@@ -441,7 +442,7 @@ def python_namespace_type(value, module=False, attribute=False):
             return modules.load_attribute(value)
         return modules.load_any(value)
     except (ImportError, modules.FailedImport) as err:
-        compatibility.raise_from(argparse.ArgumentTypeError(str(err)))
+        raise argparse.ArgumentTypeError(str(err)) from err
 
 
 def register_command(commands, real_type=type):
@@ -529,9 +530,7 @@ def convert_to_restrict(sequence, default=packages.AlwaysTrue):
         for x in sequence:
             l.append(parserestrict.parse_match(x))
     except parserestrict.ParseError as e:
-        compatibility.raise_from(
-            argparse.ArgumentError(
-                "arg %r isn't a valid atom: %s" % (x, e)))
+        raise argparse.ArgumentError("arg %r isn't a valid atom: %s" % (x, e)) from e
     return l or [default]
 
 
@@ -565,19 +564,12 @@ def main(parser, args=None, outfile=None, errfile=None):
 
     out_fd = err_fd = None
     if hasattr(outfile, 'fileno') and hasattr(errfile, 'fileno'):
-        if compatibility.is_py3k:
-            # annoyingly, fileno can exist but through unsupport
-            import io
-            try:
-                out_fd, err_fd = outfile.fileno(), errfile.fileno()
-            except (io.UnsupportedOperation, IOError):
-                pass
-        else:
-            try:
-                out_fd, err_fd = outfile.fileno(), errfile.fileno()
-            except IOError:
-                # shouldn't be possible, but docs claim it, thus protect.
-                pass
+        # annoyingly, fileno can exist but through unsupport
+        import io
+        try:
+            out_fd, err_fd = outfile.fileno(), errfile.fileno()
+        except (io.UnsupportedOperation, IOError):
+            pass
 
     if out_fd is not None and err_fd is not None:
         out_stat, err_stat = os.fstat(out_fd), os.fstat(err_fd)
@@ -631,7 +623,7 @@ def main(parser, args=None, outfile=None, errfile=None):
             traceback.print_exc()
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         os.killpg(os.getpgid(0), signal.SIGINT)
-    except compatibility.IGNORED_EXCEPTIONS:
+    except IGNORED_EXCEPTIONS:
         raise
     except errors.ParsingError as e:
         if debug:

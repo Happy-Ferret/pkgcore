@@ -9,7 +9,6 @@ __all__ = ("fetcher",)
 
 import os
 
-from snakeoil import compatibility
 from snakeoil.chksum import get_handlers, get_chksums
 from snakeoil.compatibility import cmp
 
@@ -39,9 +38,9 @@ class fetcher(object):
         if handlers is None:
             try:
                 handlers = get_handlers(target.chksums)
-            except KeyError:
-                compatibility.raise_from(errors.FetchFailed(
-                    file_location, "Couldn't find a required checksum handler"))
+            except KeyError as e:
+                raise errors.FetchFailed(
+                    file_location, "Couldn't find a required checksum handler") from e
         if all_chksums:
             missing = set(target.chksums).difference(handlers)
             if missing:
