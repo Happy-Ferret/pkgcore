@@ -50,12 +50,12 @@ incremental_expansion(PyObject *self, PyObject *args, PyObject *kwargs)
 
 	while ((item = PyIter_Next(iterator))) {
 		char *str;
-		if (!PyString_CheckExact(item)) {
+		if (!PyUnicode_CheckExact(item)) {
 			PyErr_Format(PyExc_ValueError,
 				"iterable should yield strings");
 			goto err;
 		}
-		str = PyString_AS_STRING(item);
+		str = (char *)PyUnicode_AS_DATA(item);
 		if ('-' == *str) {
 			str++;
 			if ('\0' == *str) {
@@ -77,7 +77,7 @@ incremental_expansion(PyObject *self, PyObject *args, PyObject *kwargs)
 				}
 			} else {
 				PyObject *discard_val;
-				if (NULL == (discard_val = PyString_FromString(str))) {
+				if (NULL == (discard_val = PyUnicode_FromString(str))) {
 					goto err;
 				}
 				if(is_set) {
@@ -109,10 +109,10 @@ incremental_expansion(PyObject *self, PyObject *args, PyObject *kwargs)
 		} else {
 			Py_ssize_t len = strlen(str);
 			// note that this auto sets a trailing newline.
-			PyObject *discard_val = PyString_FromStringAndSize(NULL, len + 1);
+			PyObject *discard_val = PyUnicode_FromStringAndSize(NULL, len + 1);
 			if(!discard_val)
 				goto err;
-			char *p = PyString_AS_STRING(discard_val);
+			char *p = (char *)PyUnicode_AS_DATA(discard_val);
 			p[0] = '-';
 			Py_MEMCPY(p + 1, str, len + 1);
 
@@ -145,10 +145,21 @@ err:
 	return NULL;
 }
 
-static PyMethodDef MiscMethods[] = {
-	{"incremental_expansion", (PyCFunction)incremental_expansion,
-		METH_VARARGS | METH_KEYWORDS, ""},
-	{NULL, NULL, 0, NULL}		/* Sentinel */
+static PyMethodDef methods[] = {
+	{"incremental_expansion", (PyCFunction)incremental_expansion, METH_VARARGS | METH_KEYWORDS, ""},
+	{NULL, NULL, 0, NULL}       /* Sentinel */
+};
+
+static struct PyModuleDef moduledef = {
+	PyModuleDef_HEAD_INIT,
+	"_misc", /* m_name */
+	NULL,    /* m_doc */
+	-1,      /* m_size */
+	methods, /* m_methods */
+	NULL,    /* m_reload */
+	NULL,    /* m_traverse */
+	NULL,    /* m_clear */
+	NULL,    /* m_free */
 };
 
 PyMODINIT_FUNC
@@ -158,5 +169,5 @@ init_misc(void)
 	snakeoil_LOAD_STRING(add_str, "add");
 	snakeoil_LOAD_STRING(clear_str, "clear");
 
-	PyObject *m = Py_InitModule("_misc", MiscMethods);
+	PyObject *m = PyModule_Create(&moduledef);
 }

@@ -165,23 +165,21 @@ class test(pkgdist.test):
                 os.environ.pop(key, None)
 
 
-extensions = []
-if not pkgdist.is_py3k:
-    extensions.extend([
-        pkgdist.OptionalExtension(
-            'pkgcore.ebuild._atom', ['src/atom.c']),
-        pkgdist.OptionalExtension(
-            'pkgcore.ebuild._cpv', ['src/cpv.c']),
-        pkgdist.OptionalExtension(
-            'pkgcore.ebuild._depset', ['src/depset.c']),
-        pkgdist.OptionalExtension(
-            'pkgcore.ebuild._filter_env', [
-                'src/filter_env.c', 'src/bmh_search.c']),
-        pkgdist.OptionalExtension(
-            'pkgcore.restrictions._restrictions', ['src/restrictions.c']),
-        pkgdist.OptionalExtension(
-            'pkgcore.ebuild._misc', ['src/misc.c']),
-    ])
+extensions = [
+    pkgdist.OptionalExtension(
+        'pkgcore.ebuild._atom', ['src/atom.c']),
+    pkgdist.OptionalExtension(
+        'pkgcore.ebuild._cpv', ['src/cpv.c']),
+    pkgdist.OptionalExtension(
+        'pkgcore.ebuild._depset', ['src/depset.c']),
+    pkgdist.OptionalExtension(
+        'pkgcore.ebuild._filter_env', [
+            'src/filter_env.c', 'src/bmh_search.c']),
+    pkgdist.OptionalExtension(
+        'pkgcore.restrictions._restrictions', ['src/restrictions.c']),
+    pkgdist.OptionalExtension(
+        'pkgcore.ebuild._misc', ['src/misc.c']),
+]
 
 cmdclass = {
     'sdist': sdist,
