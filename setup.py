@@ -184,7 +184,7 @@ extensions = [
 cmdclass = {
     'sdist': sdist,
     'build': pkgdist.build,
-    'build_py': pkgdist.build_py2to3,
+    'build_py': pkgdist.build_py,
     'build_ext': pkgdist.build_ext,
     'build_scripts': pkgdist.build_scripts,
     'build_man': pkgdist.build_man,
